@@ -236,7 +236,24 @@ class End:
 
 class Education: #обучение
     def __init__(self):
-        print('рекорды')
+        print('обучение')
+        fon = pygame.transform.scale(load_image('fonchik.jpg'), size)
+        screen.blit((fon), (0, 0))
+        font = pygame.font.Font(None, 30)
+        lines = ['Обучение:',
+                 'Игрок передвигается с помощью стрелочек. Задача игрока - выйти из хранилища.',
+                 'Для этого нужно собирать артефакты, но будьте внимательны, охранники хранилища будут вам мешать!',
+                 'Чтобы выйти из хранилища надо заплатить. Только собрав определенное количество артефактов  хранилище',
+                 'выпустит вас.',
+                 '                                 Удачи!']
+        # МОЖНО МЕНЯТЬ lines
+        for i in range(len(lines)):
+
+            string_rendered = font.render(lines[i], 1, pygame.Color('white'))
+            intro_rect = string_rendered.get_rect()
+            intro_rect.top = 50 * (i + 1)
+            intro_rect.x = 50
+            screen.blit(string_rendered, intro_rect)
 
 
 class Information: #информация о фрагах и персонажах
