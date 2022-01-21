@@ -243,13 +243,15 @@ def generate_level(level):
     for y in range(len(level)):
         for x in range(len(level[y])):
             if level[y][x] == '.':
-                elem = random.randint(1, len(money))
-                el = money[elem - 1]
-                money.pop(elem - 1)
-                if el == 0:
-                    level[y][x] = '.'
-                else:
-                    level[y][x] = '$'
+                print(1, len(money))
+                if len(money) > 0:  # Я здесь написала if тк без него не запускалось
+                    elem = random.randint(1, len(money))
+                    el = money[elem - 1]
+                    money.pop(elem - 1)
+                    if el == 0:
+                        level[y][x] = '.'
+                    else:
+                        level[y][x] = '$'
 
     new_player, x, y = None, None, None
     for y in range(len(level)):
@@ -471,6 +473,44 @@ class Education: #обучение
             intro_rect.top = 50 * (i + 1)
             intro_rect.x = 50
             screen.blit(string_rendered, intro_rect)
+
+
+            # Играть
+            my_font = pygame.font.Font(None, 70)
+            string_rendered = my_font.render('Играть', 1, pygame.Color('lime'))
+            intro_rect = string_rendered.get_rect()
+            intro_rect.top = 500
+            intro_rect.x = 100
+            screen.blit(string_rendered, intro_rect)
+
+
+            # В меню
+            string_rendered = my_font.render('В меню', 1, pygame.Color('yellow'))
+            intro_rect = string_rendered.get_rect()
+            intro_rect.top = 500
+            intro_rect.x = 800
+            screen.blit(string_rendered, intro_rect)
+
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    terminate()
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    Education.clikay(self, event.pos)
+            pygame.display.flip()
+
+    def clikay(self, cell_coords):
+        x = cell_coords[0]
+        y = cell_coords[1]
+        if 70 < x < 230 and 470 < y < 530:
+            New_Game()
+
+        if 770 < x < 1030 and 470 < y < 530:
+            Menu_screen()
+
+
+
+
 
 
 class Information: #информация о фрагах и персонажах
