@@ -1,9 +1,14 @@
 import random
-
+import sqlite3
 import pygame
 import os
 import sys
 pygame.init()
+con = sqlite3.connect('data/побег')
+cur = con.cursor()
+log = 'Test'
+otvet = cur.execute('''SELECT game FROM Reg WHERE login IS (?)''', (log, )).fetchall()
+person_clici = str(otvet[0][0]).split(' ')
 size = width, height = 1200, 650
 screen = pygame.display.set_mode(size)
 sprite_group = pygame.sprite.Group()
@@ -11,7 +16,10 @@ hero_group = pygame.sprite.Group()
 game_music = pygame.mixer.Sound('data/game.mp3')
 game_music.set_volume(0.025)
 clici = [0, 0, 0, 0, 0]
-person_clici = [1, 0, 0, 0, 0]
+money_player_obshii = cur.execute('''SELECT money FROM Reg WHERE login IS (?)''', (log, )).fetchall()
+money_player_obshii = money_player_obshii[0][0]
+money_player = 0
+money_brag = 0
 
 
 def Music():
@@ -77,7 +85,7 @@ class Menu_screen:
 
 class Records: #рекорды
     def __init__(self):
-        print('рекорды')
+        pass
 
 
 class New_Game: #настройки игры
@@ -88,6 +96,8 @@ class New_Game: #настройки игры
         fon = pygame.transform.scale(load_image('fon_settings.jpg'), size)
         screen.blit((fon), (0, 0))
         pygame.draw.rect(screen, (0, 0, 0), (900, 550, 280, 80))
+        im = pygame.image.load('data/кменю.png')
+        screen.blit((im), (20, 590))
         font = pygame.font.Font(None, 60)
         heig = 15
         weig = 15
@@ -115,8 +125,8 @@ class New_Game: #настройки игры
         line = "Начать игру"
         string_rendered = font.render(line, 1, pygame.Color('white'))
         intro_rect = string_rendered.get_rect()
-        intro_rect.top = 570
-        intro_rect.x = 920
+        intro_rect.top = 560
+        intro_rect.x = 910
         screen.blit(string_rendered, intro_rect)
         while True:
             for event in pygame.event.get():
@@ -132,78 +142,99 @@ class New_Game: #настройки игры
         y = cell_coords[1]
         no = (255, 255, 255)
         yes = (0, 255, 0)
+        global clici
         if 900 < x < 1180 and 550 < y < 630:
-            pygame.mixer.music.pause()
-            game_music.play(-1)
-            Game()
+            set = setting()
+            if set is True:
+                pygame.mixer.music.pause()
+                game_music.play(-1)
+                Game()
+            else:
+                Ochib(set)
+        elif 20 < x < 70 and 590 < y < 640:
+            Menu_screen()
         elif 670 - 35 < x < 670 - 5 and 95 + 5 < y < 95 + 30:
             pygame.draw.rect(screen, yes, (670 - 35, 95 + 5, 30, 30))
             pygame.draw.rect(screen, no, (670 - 35 + 180, 95 + 5, 30, 30))
             pygame.draw.rect(screen, no, (670 + 360 - 35, 95 + 5, 30, 30))
             clici[0] = 1
+            Ochib(0)
         elif 670 - 35 + 180 < x < 670 + 180 - 5 and 95 + 5 < y < 95 + 30:
             pygame.draw.rect(screen, no, (670 - 35, 95 + 5, 30, 30))
             pygame.draw.rect(screen, yes, (670 - 35 + 180, 95 + 5, 30, 30))
             pygame.draw.rect(screen, no, (670 + 360 - 35, 95 + 5, 30, 30))
             clici[0] = 2
+            Ochib(0)
         elif 670 - 35 + 360 < x < 670 + 360 - 5 and 95 + 5 < y < 95 + 30:
             pygame.draw.rect(screen, no, (670 - 35, 95 + 5, 30, 30))
             pygame.draw.rect(screen, no, (670 - 35 + 180, 95 + 5, 30, 30))
             pygame.draw.rect(screen, yes, (670 + 360 - 35, 95 + 5, 30, 30))
             clici[0] = 3
+            Ochib(0)
         elif 670 - 35 < x < 670 - 5 and 95 + 5 + 80 < y < 95 + 30 + 80:
             pygame.draw.rect(screen, yes, (670 - 35, 95 + 5 + 80, 30, 30))
             pygame.draw.rect(screen, no, (670 - 35 + 180, 95 + 5 + 80, 30, 30))
             pygame.draw.rect(screen, no, (670 + 360 - 35, 95 + 5 + 80, 30, 30))
             clici[1] = 1
+            Ochib(0)
         elif 670 - 35 + 180 < x < 670 + 180 - 5 and 95 + 5 + 80 < y < 95 + 30 + 80:
             pygame.draw.rect(screen, no, (670 - 35, 95 + 5 + 80, 30, 30))
             pygame.draw.rect(screen, yes, (670 - 35 + 180, 95 + 5 + 80, 30, 30))
             pygame.draw.rect(screen, no, (670 + 360 - 35, 95 + 5 + 80, 30, 30))
             clici[1] = 2
+            Ochib(0)
         elif 670 - 35 + 360 < x < 670 + 360 - 5 and 95 + 5 + 80 < y < 95 + 30 + 80:
             pygame.draw.rect(screen, no, (670 - 35, 95 + 5 + 80, 30, 30))
             pygame.draw.rect(screen, no, (670 - 35 + 180, 95 + 5 + 80, 30, 30))
             pygame.draw.rect(screen, yes, (670 + 360 - 35, 95 + 5 + 80, 30, 30))
             clici[1] = 3
+            Ochib(0)
         elif 670 - 35 < x < 670 - 5 and 95 + 160 + 5 < y < 95 + 160 + 30:
             pygame.draw.rect(screen, yes, (670 - 35, 95 + 5 + 160, 30, 30))
             pygame.draw.rect(screen, no, (670 - 35 + 180, 95 + 5 + 160, 30, 30))
             pygame.draw.rect(screen, no, (670 + 360 - 35, 95 + 5 + 160, 30, 30))
             clici[2] = 1
+            Ochib(0)
         elif 670 - 35 + 180 < x < 670 + 180 - 5 and 95 + 160 + 5 < y < 95 + 160 + 30:
             pygame.draw.rect(screen, no, (670 - 35, 95 + 5 + 160, 30, 30))
             pygame.draw.rect(screen, yes, (670 - 35 + 180, 95 + 5 + 160, 30, 30))
             pygame.draw.rect(screen, no, (670 + 360 - 35, 95 + 5 + 160, 30, 30))
             clici[2] = 2
+            Ochib(0)
         elif 670 - 35 + 360 < x < 670 + 360 - 5 and 95 + 5 + 160 < y < 95 + 30 + 160:
             pygame.draw.rect(screen, no, (670 - 35, 95 + 5 + 160, 30, 30))
             pygame.draw.rect(screen, no, (670 - 35 + 180, 95 + 5 + 160, 30, 30))
             pygame.draw.rect(screen, yes, (670 + 360 - 35, 95 + 5 + 160, 30, 30))
             clici[2] = 3
+            Ochib(0)
         elif 670 - 35 < x < 670 - 5 and 95 + 5 + 240 < y < 95 + 30 + 240:
             pygame.draw.rect(screen, yes, (670 - 35, 95 + 5 + 240, 30, 30))
             pygame.draw.rect(screen, no, (670 - 35 + 180, 95 + 5 + 240, 30, 30))
             clici[3] = 1
+            Ochib(0)
         elif 670 - 35 + 180 < x < 670 + 180 - 5 and 95 + 5 + 240 < y < 95 + 30 + 240:
             pygame.draw.rect(screen, no, (670 - 35, 95 + 5 + 240, 30, 30))
             pygame.draw.rect(screen, yes, (670 - 35 + 180, 95 + 5 + 240, 30, 30))
             clici[3] = 2
+            Ochib(0)
         elif 670 - 35 < x < 670 - 5 and 95 + 5 + 320 < y < 95 + 30 + 320:
             pygame.draw.rect(screen, yes, (670 - 35, 95 + 5 + 320, 30, 30))
             pygame.draw.rect(screen, no, (670 - 35 + 180, 95 + 5 + 320, 30, 30))
             pygame.draw.rect(screen, no, (670 + 360 - 35, 95 + 5 + 320, 30, 30))
             clici[4] = 1
+            Ochib(0)
         elif 670 - 35 + 180 < x < 670 + 180 - 5 and 95 + 5 + 320 < y < 95 + 30 + 320:
             pygame.draw.rect(screen, no, (670 - 35, 95 + 5 + 320, 30, 30))
             pygame.draw.rect(screen, yes, (670 - 35 + 180, 95 + 5 + 320, 30, 30))
             pygame.draw.rect(screen, no, (670 + 360 - 35, 95 + 5 + 320, 30, 30))
             clici[4] = 2
+            Ochib(0)
         elif 670 - 35 + 360 < x < 670 + 360 - 5 and 95 + 5 + 320 < y < 95 + 30 + 320:
             pygame.draw.rect(screen, no, (670 - 35, 95 + 5 + 320, 30, 30))
             pygame.draw.rect(screen, no, (670 - 35 + 180, 95 + 5 + 320, 30, 30))
             pygame.draw.rect(screen, yes, (670 + 360 - 35, 95 + 5 + 320, 30, 30))
             clici[4] = 3
+            Ochib(0)
 
 
 money_group = pygame.sprite.Group()
@@ -216,25 +247,46 @@ tile_width = tile_height = 50
 money = 0
 
 
-class Not_vibran(Exception):
-    pass
-
-
-class Not_Level(Exception):
-    pass
+def Ochib(set):
+    font = pygame.font.Font(None, 60)
+    line = ['']
+    pygame.draw.rect(screen, (0, 0, 0), (900, 550, 280, 80))
+    if set == 0:
+        line = ["Начать игру"]
+    elif set == 1:
+        font = pygame.font.Font(None, 30)
+        line = ["Не выбран элемент ", "(нажмите что бы выбрать)"]
+    elif set == 2:
+        font = pygame.font.Font(None, 30)
+        line = ["Вам не доступен этот уровень,", "пройдите уровень меньше. "]
+    elif set == 3:
+        font = pygame.font.Font(None, 30)
+        line = ["Вам не доступен этот персонаж, ", "веберите другого персонажа."]
+    elif set == 4:
+        font = pygame.font.Font(None, 30)
+        line = ["Вам не доступен этот враг, ", "веберите другого врага."]
+    h = 560
+    for i in range(len(line)):
+        string_rendered = font.render(line[i], 1, pygame.Color('white'))
+        intro_rect = string_rendered.get_rect()
+        intro_rect.top = h
+        intro_rect.x = 910
+        screen.blit(string_rendered, intro_rect)
+        h += 30
 
 
 def setting():
-    global clici
-    try:
-        if 0 in clici:
-            raise Not_vibran
-        if clici[0] <= person_clici[0]:
-            raise Not_Level
-    except Not_vibran:
-        return 'Не выбран элемент(нажмите что бы выбрать)'
-    except Not_Level:
-        return 'Вам не доступен этот уровень, пройдите уровень меньше.'
+    global clici, person_clici
+    if 0 in clici:
+        return 1
+    elif clici[0] > int(person_clici[0]):
+        return 2
+    elif clici[1] > int(person_clici[1]):
+        return 3
+    elif clici[2] > int(person_clici[2]):
+        return 4
+    else:
+        return True
 
 
 def generate_level(level):
@@ -243,15 +295,13 @@ def generate_level(level):
     for y in range(len(level)):
         for x in range(len(level[y])):
             if level[y][x] == '.':
-                print(1, len(money))
-                if len(money) > 0:  # Я здесь написала if тк без него не запускалось
-                    elem = random.randint(1, len(money))
-                    el = money[elem - 1]
-                    money.pop(elem - 1)
-                    if el == 0:
-                        level[y][x] = '.'
-                    else:
-                        level[y][x] = '$'
+                elem = random.randint(1, len(money))
+                el = money[elem - 1]
+                money.pop(elem - 1)
+                if el == 0:
+                    level[y][x] = '.'
+                else:
+                    level[y][x] = '$'
 
     new_player, x, y = None, None, None
     for y in range(len(level)):
@@ -397,11 +447,6 @@ def Dvech(hero, xod):
                 hero.move(x + 1, y)
 
 
-dano = {}
-money_player = 0
-money_brag = 0
-
-
 class Game:
     def __init__(self):
         money_player = 0
@@ -450,72 +495,63 @@ class Game:
 
 class End:
     def __init__(self):
-        pass
+        global person_clici
+        for i in range(3):
+            if int(person_clici[i]) < 3:
+                t = int(person_clici[i])
+                person_clici[i] = str(t + 1)
+                con = sqlite3.connect('data/побег')
+                cur = con.cursor()
+                cur.execute("""UPDATE Reg
+                                    SET game = (?)
+                                    WHERE login == (?)
+                                   """, (' '.join(person_clici), 'Test'))
+                con.commit()
 
 
 class Education: #обучение
     def __init__(self):
-        print('обучение')
         fon = pygame.transform.scale(load_image('fonchik.jpg'), size)
         screen.blit((fon), (0, 0))
         font = pygame.font.Font(None, 30)
+        im = pygame.image.load('data/кменю.png')
+        screen.blit((im), (20, 590))
+        im = pygame.image.load('data/кигре.png')
+        screen.blit((im), (1080, 590))
         lines = ['Обучение:',
                  'Игрок передвигается с помощью стрелочек. Задача игрока - выйти из хранилища.',
-                 'Для этого нужно собирать артефакты, но будьте внимательны, охранники хранилища будут вам мешать!',
-                 'Чтобы выйти из хранилища надо заплатить. Только собрав определенное количество артефактов  хранилище',
+                 'Для этого нужно собирать монеты, но будьте внимательны, охранники хранилища будут вам мешать!',
+                 'Чтобы выйти из хранилища надо заплатить. Только собрав определенное количество монет хранилище',
                  'выпустит вас.',
                  '                                 Удачи!']
         # МОЖНО МЕНЯТЬ lines
         for i in range(len(lines)):
-
             string_rendered = font.render(lines[i], 1, pygame.Color('white'))
             intro_rect = string_rendered.get_rect()
             intro_rect.top = 50 * (i + 1)
             intro_rect.x = 50
             screen.blit(string_rendered, intro_rect)
-
-
-            # Играть
-            my_font = pygame.font.Font(None, 70)
-            string_rendered = my_font.render('Играть', 1, pygame.Color('lime'))
-            intro_rect = string_rendered.get_rect()
-            intro_rect.top = 500
-            intro_rect.x = 100
-            screen.blit(string_rendered, intro_rect)
-
-
-            # В меню
-            string_rendered = my_font.render('В меню', 1, pygame.Color('yellow'))
-            intro_rect = string_rendered.get_rect()
-            intro_rect.top = 500
-            intro_rect.x = 800
-            screen.blit(string_rendered, intro_rect)
-
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     terminate()
                 elif event.type == pygame.MOUSEBUTTONDOWN:
-                    Education.clikay(self, event.pos)
+                    Education.on_click(self, event.pos)
             pygame.display.flip()
+        pygame.quit()
 
-    def clikay(self, cell_coords):
+    def on_click(self, cell_coords):
         x = cell_coords[0]
         y = cell_coords[1]
-        if 70 < x < 230 and 470 < y < 530:
-            New_Game()
-
-        if 770 < x < 1030 and 470 < y < 530:
+        if 20 < x < 120 and 590 < y < 640:
             Menu_screen()
-
-
-
-
+        elif 1080 < x < 1180 and 590 < y < 640:
+            New_Game()
 
 
 class Information: #информация о фрагах и персонажах
     def __init__(self):
-        print('информация')
+        pass
 
 
 def start_screen():
