@@ -15,13 +15,15 @@ hero_group = pygame.sprite.Group()
 game_music = pygame.mixer.Sound('data/game.mp3')
 game_music.set_volume(0.025)
 clici = [0, 0, 0, 0, 0]
-person_clici = [1, 2, 2, 0, 0] #для теста, потом изменится
+person_clici = [1, 2, 2, 0, 0]
+person_login = ''
+person_money = 0 #для теста, потом изменится
 money_brag = 0
 tile_width = tile_height = 50
 money = 0
 ymnosh = 1 #при всяких баффов
 xp = 15
-
+f = True
 
 class SpriteGroup(pygame.sprite.Sprite):
     def __init__(self):
@@ -41,55 +43,57 @@ class Sprite(pygame.sprite.Sprite):
         pass
 
 
-class Reg(QMainWindow):
-    def __init__(self):
-        super().__init__()
-        self.money = 50
-        uic.loadUi('data/reg.ui', self)  # Загружаем дизайн
-        self.db = sqlite3.connect("data/info.db")
-        self.sql = self.db.cursor()
-        self.sql.execute("""CREATE TABLE IF NOT EXISTS users(
-                    login TEXT,
-                    password TEXT,
-                    current_money INTEGER,
-                    clici TEXT)""")
-        self.sql.execute("""CREATE TABLE IF NOT EXISTS records(
-                            login TEXT,
-                            money INTEGER,
-                            time INTEGER)""")
-        self.db.commit()
-        self.show()
-        self.pushButton.clicked.connect(self.check)
-
-    def check(self):
-        self.l = self.lineEdit.text()
-        self.p = self.lineEdit_2.text()
-        if self.l == '' or self.p == '':
-            self.label_3.setText("Заполните поля!")
-            self.label_3.adjustSize()
-        else:
-            result = self.sql.execute("""SELECT * FROM users WHERE login = (?)""",
-                                      (self.l,)).fetchall()
-            print(result)
-            if len(result) > 0:
-                if result[0][1] == self.p:
-                    global person_clici, person_money, person_login
-                    person_clici = [int(i) for i in result[0][3].split(' ')]
-                    person_money = result[0][2]
-                    person_login = self.l
-                    self.close()
-                else:
-                    self.label_3.setText("Неправильный пароль!")
-                    self.label_3.adjustSize()
-                    self.lineEdit_2.setText("")
-            else:
-                self.sql.execute(f"""INSERT INTO users(login, password, current_money, clici) 
-                        VALUES('{self.l}', '{self.p}', {self.money}, {0, 0, 0, 0, 0} )""")
-                self.db.commit()
-                person_clici = [0, 0, 0, 0, 0]
-                person_money = self.money
-                person_login = self.l
-                self.close()
+#class Reg(QMainWindow):
+#    def __init__(self):
+#        super().__init__()
+#        self.money = 50
+#        uic.loadUi('data/reg.ui', self)  # Загружаем дизайн
+#        self.db = sqlite3.connect("data/info.db")
+#        self.sql = self.db.cursor()
+#        self.sql.execute("""CREATE TABLE IF NOT EXISTS users(
+#                    login TEXT,
+#                    password TEXT,
+#                    current_money INT,
+#                    clici TEXT)""")
+#        self.sql.execute("""CREATE TABLE IF NOT EXISTS records(
+#                            login TEXT,
+#                            money INTEGER,
+#                            time INTEGER)""")
+#        self.db.commit()
+#        self.show()
+#        self.pushButton.clicked.connect(self.check)
+#
+#    def check(self):
+#        self.l = self.lineEdit.text()
+#        self.p = self.lineEdit_2.text()
+#        if self.l == '' or self.p == '':
+#            self.label_3.setText("Заполните поля!")
+#            self.label_3.adjustSize()
+#        else:
+#            result = self.sql.execute("""SELECT * FROM users WHERE login = (?)""",
+#                                      (self.l,)).fetchall()
+#            if len(result) > 0:
+#                if result[0][1] == self.p:
+#                    global person_clici, person_money, person_login
+#                    person_clici = [int(i) for i in result[0][3].split(' ')]
+#                    person_money = result[0][2]
+#                    person_login = self.l
+#                    self.close()
+#                else:
+#                    self.label_3.setText("Неправильный пароль!")
+#                    self.label_3.adjustSize()
+#                    self.lineEdit_2.setText("")
+#            else:
+#                self.sql.execute("""INSERT INTO users(login, password, current_money, clici)
+#                                    VALUES (?, ?, ?, ?)""",
+#                                 (str(self.l), str(self.p), int(self.money), '1 2 2 0 0'))
+#                print(2)
+#                self.db.commit()
+#                person_clici = [1, 2, 2, 0, 0]
+#                person_money = self.money
+#                person_login = self.l
+#                global f
+#                f = False
 
 
 def start_screen():
@@ -100,7 +104,6 @@ def start_screen():
             if event.type == pygame.QUIT:
                 terminate()
             elif event.type == pygame.MOUSEBUTTONDOWN:
-
                 return
         pygame.display.flip()
 
@@ -120,21 +123,20 @@ class Menu_screen:
             intro_rect.x = (1200 - intro_rect.width)//2
             text_coord += intro_rect.height
             screen.blit(string_rendered, intro_rect)
-        self.f = open("current_person.txt", mode='r', encoding="utf-8").read()
-        if len(self.f) > 0:
-            while True:
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        terminate()
-                    elif event.type == pygame.MOUSEBUTTONDOWN:
-                        Menu_screen.on_click(self, event.pos)
-                pygame.display.flip()
+
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    terminate()
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    Menu_screen.on_click(self, event.pos)
+            pygame.display.flip()
 
     def on_click(self, cell_coords):
         x = cell_coords[0]
         y = cell_coords[1]
         if 520 < x < 680 and 85 < y < 120:
-            Records()
+            Record()
         if 500 < x < 700 and 215 < y < 245:
             New_Game()
         if 510 < x < 685 and 340 < y < 375:
@@ -481,9 +483,42 @@ class Information:  # информация о фрагах и персонажа
             New_Game()
 
 
-class Records: #рекорды
-    def __init__(self):
-        pass
+#class Record(QMainWindow):
+#    def __init__(self):
+#        super().__init__()
+#        global person_login, time, money
+#        uic.loadUi('data/record.ui', self)
+#        self.db = sqlite3.connect("data/info.db")
+#        self.sql = self.db.cursor()
+#        result = self.sql.execute("""SELECT * FROM records WHERE login = ?""",
+#                                  (person_login,)).fetchall()
+#        if len(result) > 0:
+#            if result[0][1] < money:
+#                self.sql.execute(f"""UPDATE records
+#                                    SET money = {money}
+#                                    WHERE login = '{person_login}'""")
+#                self.db.commit()
+#            if result[0][2] < time:
+#                self.sql.execute(f"""UPDATE records
+#                                    SET time = {time}
+#                                    WHERE login = '{person_login}'""")
+#                self.db.commit()
+#        else:
+#            self.sql.execute(f"""INSERT INTO records(login, money, time) 
+#                                    VALUES('{person_login}', {money}, {time})""")
+#            self.db.commit()
+#        self.show_db()
+#        self.radioButton.clicked.connect(self.show_db)
+#        self.radioButton_2.clicked.connect(self.show_db)
+#
+#    def show_db(self):
+#        self.textBrowser.clear()
+#        vid = 'money' if self.radioButton.isChecked() else 'time'
+#        result = self.sql.execute(f"""SELECT * FROM records ORDER BY {vid} desc""")
+#        output = []
+#        for i in result:
+#            output.append('  -  '.join([str(k) for k in i]))
+#        self.textBrowser.setText('\n'.join(output))
 
 
 def Music():
@@ -647,7 +682,6 @@ level_map = None
 player, max_x, max_y = None, None, None
 
 
-
 def Dvech(hero, xod):
     x, y = hero.pos
     global money_player
@@ -698,8 +732,5 @@ if __name__ == '__main__':
     running = True
     Music()
     start_screen()
-    app = QApplication(sys.argv)
-    w = Reg()
-    w.show()
-    sys.exit(app.exec_())
     Menu_screen()
+    #app = QApplication(sys.argv)
